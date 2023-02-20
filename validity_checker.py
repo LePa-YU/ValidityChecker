@@ -38,8 +38,8 @@ def read_file(warning_list):
                                                               row['isRequiredBy'], row['isPartOf'], row['isFormatOf'], )
                         file_dict[row['ID']].confirm_fields(warning_list)
                 except KeyError as ke:
-                    print('ERROR: Please check that your csv header does not have extra whitespace before or after the '
-                          'terms listed. See: ', ke)
+                    print('Key ERROR: Please check that your csv header has the required fields. See: ', ke)
+                    break
             # input("Press enter to continue...")
     else:
         raise FileNotFoundError('No such file or directory')
