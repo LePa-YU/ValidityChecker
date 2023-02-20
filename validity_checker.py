@@ -35,29 +35,59 @@ def read_file(warning_list):
                 except KeyError as ke:
                     print('ERROR: Please check that your csv header does not have extra whitespace before or after the '
                           'terms listed. See: ', ke)
-
             # input("Press enter to continue...")
     else:
         raise FileNotFoundError('No such file or directory')
 
     return file_dict, warning_list
 
+def confirm_relationships(file_dict, warning_list):
+    for key, er in file_dict.items():
+        if er.requires:
+            list = er.requires.replace(" ", "").split(",")
+            for n in list:
+                if key not in file_dict[n].isRequiredBy:
+                    warning_list.add_error("ERROR: Missing relationship (isRequiredBy) in "+file_dict[n].id+" for "+key)
+                    # print("warning isrequiredby: "+n)
+        elif er.isRequiredBy:
+            list = er.isRequiredBy.replace(" ","").split(",")
+            for n in list:
+                # print(file_dict[n].requires)
+                if key not in file_dict[n].requires:
+                    warning_list.add_error("ERROR: Missing relationship (requires) in "+file_dict[n].id+" for "+key)
+                    # print("warning requires: "+n)
+
+            # input("Press enter to continue...")
+            # if list:
+            #     print()
+            # print(file_dict[er.isRequiredBy].id, file_dict[er.isRequiredBy].requires)
+            # elif key is not file_dict[er.isRequiredBy].requires:
+            #     warning_list.add_error("ERROR: Missing relationship (requires) in "+file_dict[er.isRequiredBy].id)
+
+    # warning_list.print_error()
+    # input("Press enter to continue...")
+
+
+
 def main():
     warning_list = func.WarningList()
-    list_dict, w_list = read_file(warning_list)
+    file_dict, warning_list = read_file(warning_list)
+    confirm_relationships(file_dict,warning_list)
+
+    # input("Press enter to continue...")
 
     while True:
         print_error = input('Do you want to print warning or error list? (Type: warning or error or quit) ')
         if print_error.lower() == 'warning' or print_error.lower() == 'w':
-            if not w_list.print_warning():
+            if not warning_list.warning:
                 print("No warnings!")
             else:
-                w_list.print_warning()
+                warning_list.print_warning()
         elif print_error.lower() == 'error' or print_error.lower() == 'e':
-            if not w_list.print_error():
+            if not warning_list.error:
                 print("No errors!")
             else:
-                w_list.print_error()
+                warning_list.print_error()
         elif print_error.lower() == 'quit' or print_error.lower() == 'q':
             print("Program exit.")
             raise SystemExit
