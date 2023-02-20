@@ -14,9 +14,14 @@ def read_file(warning_list):
     filepath = askopenfilename()  # show an "Open" dialog box and return the path to the selected file
     print(filepath)
     if os.path.exists(filepath):
+
         with open(filepath) as csvfile:
             csv_reader = DictReader(csvfile)
             file_dict = {}
+
+            header_list = ','.join(csv_reader.fieldnames)
+            header_list = header_list.replace(" ","").split(",")
+            csv_reader.fieldnames = header_list
 
             for row in csv_reader:
                 try:
