@@ -7,42 +7,57 @@ from tkinter.filedialog import askopenfilename
 
 # Datastructure
 # {ID1: { data for ID1 from CSV }, ID2: { data for ID2 from CSV } ... IDN: { data for IDN from CSV }}
-def read_file(warning_list):
+def read_file(warning_list, header_list, complete_header_list):
     print("Please give a file: ")
     root = tk.Tk()
     root.withdraw()  # we don't want a full GUI, so keep the root window from appearing
     filepath = askopenfilename()  # show an "Open" dialog box and return the path to the selected file
-    print(filepath)
-    if os.path.exists(filepath):
 
-        with open(filepath) as csvfile:
+    if os.path.exists(filepath):
+        with open(filepath, encoding="utf-8-sig") as csvfile:
             csv_reader = DictReader(csvfile)
             file_dict = {}
+            header_list.header_original = csv_reader.fieldnames
+            # header_list.check_header_spelling(warning_list, complete_header_list)
+            fieldnames = ','.join(csv_reader.fieldnames).lower().replace(" ", "").split(",")
 
-            header_list = ','.join(csv_reader.fieldnames)
-            header_list = header_list.replace(" ","").split(",")
-            csv_reader.fieldnames = header_list
+            header_list.header_modified = fieldnames
+            header_list.check_header(warning_list, complete_header_list)
+            header_list.add_header(complete_header_list)
+
+            # print(fieldnames)
+            # warning_list.print_error()
+            # warning_list.print_warning()
+
+            # input("Press enter to continue...")
+
+            csv_reader.fieldnames = header_list.header_modified
+            # print(header_list.header_modified)
+            # print(csv_reader.fieldnames)
+
+            # input("Press enter to continue...")
 
             for row in csv_reader:
                 try:
                     if row['type'] == 'aER' or row['type'] == 'iER' or row['type'] == 'rER':
-                        file_dict[row['ID']] = func.Composite(row['ID'], row['title'], row['alternative'], row['targetUrl'],
-                                                           row['type'], row['assesses'], row['comesAfter'],
-                                                           row['alternativeContent'], row['requires'],
-                                                           row['isRequiredBy'], row['isPartOf'], row['isFormatOf'], )
-                        file_dict[row['ID']].confirm_fields(warning_list)
+                        file_dict[row['id']] = func.Composite(row['id'], row['title'], row['alternative'], row['targeturl'],
+                                                           row['type'], row['assesses'], row['comesafter'],
+                                                           row['alternativecontent'], row['requires'],
+                                                           row['isrequiredby'], row['ispartof'], row['isformatof'])
+                        file_dict[row['id']].confirm_fields(warning_list)
                     else:
-                        file_dict[row['ID']] = func.Atomic(row['ID'], row['title'], row['alternative'], row['targetUrl'],
-                                                              row['type'], row['assesses'], row['comesAfter'],
-                                                              row['alternativeContent'], row['requires'],
-                                                              row['isRequiredBy'], row['isPartOf'], row['isFormatOf'], )
-                        file_dict[row['ID']].confirm_fields(warning_list)
+                        file_dict[row['id']] = func.Atomic(row['id'], row['title'], row['alternative'], row['targeturl'],
+                                                           row['type'], row['assesses'], row['comesafter'],
+                                                           row['alternativecontent'], row['requires'],
+                                                           row['isrequiredby'], row['ispartof'], row['isformatof'])
+                        file_dict[row['id']].confirm_fields(warning_list)
                 except KeyError as ke:
                     print('Key ERROR: Please check that your csv header has the required fields. See: ', ke)
                     break
             # input("Press enter to continue...")
     else:
-        raise FileNotFoundError('No such file or directory')
+        print("No file selected.")
+        raise SystemExit
 
     return file_dict, warning_list
 
@@ -75,14 +90,22 @@ def confirm_relationships(file_dict, warning_list):
 
 
 def main():
+    complete_header_list = ['ID', 'title', 'alternative', 'targetUrl', 'type', 'assesses', 'comesAfter',
+                            'alternativeContent', 'requires', 'isRequiredBy', 'isPartOf', 'isFormatOf']
     warning_list = func.WarningList()
-    file_dict, warning_list = read_file(warning_list)
+    header_list = func.Headerlist()
+    file_dict, warning_list = read_file(warning_list, header_list, complete_header_list)
     confirm_relationships(file_dict,warning_list)
 
     # input("Press enter to continue...")
 
     while True:
-        print_error = input('Do you want to print warning or error list? (Type: warning or error or quit) ')
+        print("The following actions are available: ")
+        print("Print error.")
+        print("Print warning.")
+        print("Print missing fields.")
+        print("Quit")
+        print_error = input('Type: warning(w), error(e), field(f) or quit(q): ')
         if print_error.lower() == 'warning' or print_error.lower() == 'w':
             if not warning_list.warning:
                 print("No warnings!")
@@ -93,6 +116,11 @@ def main():
                 print("No errors!")
             else:
                 warning_list.print_error()
+        elif print_error.lower() == 'field' or print_error.lower() == 'f':
+            if not warning_list.missing_fields:
+                print("No missing fields!")
+            else:
+                warning_list.print_missing_fields()
         elif print_error.lower() == 'quit' or print_error.lower() == 'q':
             print("Program exit.")
             raise SystemExit
