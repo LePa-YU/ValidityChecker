@@ -101,11 +101,8 @@ def main():
 
     while True:
         warning_list.print_msg()
-        # print("The following actions are available: ")
-        # print("Print error.")
-        # print("Print warning.")
-        # print("Print missing fields.")
-        # print("Quit")
+        print("The following actions are available: ")
+        print("Print error (e). Print warning (w). Print missing fields (f).")
         print_error = input('Type: warning(w), error(e), field(f) or quit(q): ')
         if print_error.lower() == 'warning' or print_error.lower() == 'w':
             if not warning_list.warning:
