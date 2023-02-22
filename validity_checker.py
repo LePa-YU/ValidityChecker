@@ -95,30 +95,36 @@ def main():
     warning_list = func.WarningList()
     header_list = func.Headerlist()
     file_dict, warning_list = read_file(warning_list, header_list, complete_header_list)
-    confirm_relationships(file_dict,warning_list)
+    confirm_relationships(file_dict, warning_list)
 
     # input("Press enter to continue...")
 
     while True:
         warning_list.print_msg()
         print("The following actions are available: ")
-        print("Print errors (e). Print warnings (w). Print missing fields (f).")
-        print_error = input('Type: warnings (w), errors (e), fields (f) or quit(q): ')
+        print("Print errors (e). Print warnings (w). Print empty fields (f).")
+        print_error = input('Input:  ')
         if print_error.lower() == 'warning' or print_error.lower() == 'w':
             if not warning_list.warning:
                 print("No warnings!")
+                print("")
             else:
                 warning_list.print_warning()
+                print("")
         elif print_error.lower() == 'error' or print_error.lower() == 'e':
             if not warning_list.error:
                 print("No errors!")
+                print("")
             else:
                 warning_list.print_error()
+                print("")
         elif print_error.lower() == 'field' or print_error.lower() == 'f':
             if not warning_list.missing_fields:
-                print("No missing fields!")
+                print("No empty fields!")
+                print("")
             else:
                 warning_list.print_missing_fields()
+                print("")
         elif print_error.lower() == 'quit' or print_error.lower() == 'q':
             print("Program exit.")
             raise SystemExit

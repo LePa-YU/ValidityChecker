@@ -26,7 +26,7 @@ class WarningList:
             print(str(idx+1) + " " + x)
 
     def print_msg(self):
-        print("There are "+str(len(self.error))+" errors, "+str(len(self.warning))+" warnings, and "+
+        print("There are "+str(len(self.error))+" errors, "+str(len(self.warning))+" warnings, and " +
               str(len(self.missing_fields))+" missing fields.")
 
 
