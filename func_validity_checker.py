@@ -27,7 +27,7 @@ class WarningList:
 
     def print_msg(self):
         print("There are "+str(len(self.error))+" errors, "+str(len(self.warning))+" warnings, and " +
-              str(len(self.missing_fields))+" missing fields.")
+              str(len(self.missing_fields))+" empty fields.")
 
 
 class Headerlist:
@@ -153,9 +153,9 @@ class Atomic:
         warning = self.print_fields(list_warning)
 
         if error:
-            warning_list.add_error("ERROR: Missing the following field(s): " + error + " in row ID: "+self.id)
+            warning_list.add_error("ERROR: Missing the following field(s): " + error + " on row ID: "+self.id)
         if warning:
-            warning_list.add_missing_field("Warning: Missing the following field(s): " + warning + " in row ID: "+self.id)
+            warning_list.add_missing_field("The following field(s) are empty: " + warning + " on row ID: "+self.id)
 
 
     def print_fields(self, fieldname):
