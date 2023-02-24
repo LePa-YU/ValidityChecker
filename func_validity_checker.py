@@ -61,7 +61,7 @@ class Headerlist:
             warning_list.add_warning("Warning: Missing column(s): "+text)
         if spelling:
             text = self.print_columns(spelling)
-            warning_list.add_error("ERROR: check spelling: "+text)
+            warning_list.add_warning("Warning: check spelling: "+text)
 
 
     def print_columns(self, error):
