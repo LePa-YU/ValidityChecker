@@ -61,7 +61,7 @@ class Headerlist:
             warning_list.add_warning("Warning: Missing column(s): "+text)
         if spelling:
             text = self.print_columns(spelling)
-            warning_list.add_warning("Warning: check spelling: "+text)
+            warning_list.add_warning("Warning: Check spelling: "+text)
 
 
     def print_columns(self, error):
@@ -156,7 +156,6 @@ class Atomic:
             warning_list.add_error("ERROR: Missing the following field(s): " + error + " on row ID: "+self.id)
         if warning:
             warning_list.add_missing_field("The following field(s) are empty: " + warning + " on row ID: "+self.id)
-
 
     def print_fields(self, fieldname):
         text = ''

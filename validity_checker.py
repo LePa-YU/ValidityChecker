@@ -61,21 +61,25 @@ def read_file(warning_list, header_list, complete_header_list):
 
     return file_dict, warning_list
 
-def confirm_relationships(file_dict, warning_list):
+def check_dict(file_dict, warning_list):
     for key, er in file_dict.items():
-        if er.requires:
-            list = er.requires.replace(" ", "").split(",")
-            for n in list:
-                if key not in file_dict[n].isRequiredBy:
-                    warning_list.add_error("ERROR: Missing relationship (isRequiredBy) in "+file_dict[n].id+" for "+key)
-                    # print("warning isrequiredby: "+n)
-        elif er.isRequiredBy:
-            list = er.isRequiredBy.replace(" ","").split(",")
-            for n in list:
-                # print(file_dict[n].requires)
-                if key not in file_dict[n].requires:
-                    warning_list.add_error("ERROR: Missing relationship (requires) in "+file_dict[n].id+" for "+key)
-                    # print("warning requires: "+n)
+        confirm_relationships(file_dict, key, er, warning_list)
+        confirm_disconnected_node(file_dict, key, er, warning_list)
+def confirm_relationships(file_dict, key, er, warning_list):
+    # for key, er in file_dict.items():
+    if er.requires:
+        list = er.requires.replace(" ", "").split(",")
+        for n in list:
+            if key not in file_dict[n].isRequiredBy:
+                warning_list.add_warning("Warning: Missing relationship (isRequiredBy) in "+file_dict[n].id+" for "+key)
+                # print("warning isrequiredby: "+n)
+    elif er.isRequiredBy:
+        list = er.isRequiredBy.replace(" ","").split(",")
+        for n in list:
+            # print(file_dict[n].requires)
+            if key not in file_dict[n].requires:
+                warning_list.add_warning("Warning: Missing relationship (requires) in "+file_dict[n].id+" for "+key)
+                # print("warning requires: "+n)
 
             # input("Press enter to continue...")
             # if list:
@@ -87,6 +91,24 @@ def confirm_relationships(file_dict, warning_list):
     # warning_list.print_error()
     # input("Press enter to continue...")
 
+# assesses,comesAfter,alternativeContent,requires,isRequiredBy,isPartOf,isFormatOf
+def confirm_disconnected_node(file_dict, key, er, warning_list):
+    # print(er.requires)
+    check = False
+    if not er.requires and not er.isRequiredBy and not er.assesses and not er.comesAfter and not er.alternativeContent and not er.isPartOf and not er.isFormatOf:
+        print("True 1")
+        print(file_dict[key].id)
+        for key2, er2 in file_dict.items():
+            if er2.requires is file_dict[key].id or er2.isRequiredBy is file_dict[key].id or er2.assesses is file_dict[key].id or er2.comesAfter is file_dict[key].id or er2.alternativeContent is file_dict[key].id or er2.isPartOf is file_dict[key].id or er2.isFormatOf is file_dict[key].id:
+                check = True
+                break
+                print("True 2")
+
+        if check is False and er.title != 'End' and er.title != 'Start':
+            warning_list.add_warning("Warning: No relationships found for ID: "+file_dict[key].id)
+
+
+
 
 
 def main():
@@ -95,7 +117,7 @@ def main():
     warning_list = func.WarningList()
     header_list = func.Headerlist()
     file_dict, warning_list = read_file(warning_list, header_list, complete_header_list)
-    confirm_relationships(file_dict, warning_list)
+    check_dict(file_dict, warning_list)
 
     # input("Press enter to continue...")
 

@@ -1,7 +1,7 @@
 ﻿ID,Title,Alternative,targetUrl,Type,isPartOf,assesses,comesAfter
 0,Start,start,,start,,,
-1,Module 1: Activity,Module_1_activity,,aER,,,3
-2,Module 1: Lab task,Module_1_lab_tasks,,.txt,1,,
+1,Module 1: Activity,Module_1_activity,,aER,,,
+2,Module 1: Lab task,Module_1_lab_tasks,,.txt,,,
 3,Module 1: Instructions,Module_1_instructions,,iER,,,0
 4,Module 1: Due,Module_1_due,,.txt,3,,
 5,Module 1: Study material,Module_1_study_material,,.txt,3,,
