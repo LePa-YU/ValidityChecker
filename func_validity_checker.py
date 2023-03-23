@@ -44,9 +44,17 @@ class Headerlist:
         error = []
         warning = []
         spelling = []
+
+        if 'identifier' not in self.header_modified and 'id' not in self.header_modified:
+            error.append('identifier')
+            self.header_modified.append('identifier')
+        elif 'id' in self.header_modified:
+            spelling.append('identifier')
+
+
         for header in real_header:
             if (header.lower() not in self.header_modified) and (
-                    header.lower() == 'id' or header.lower() == 'title' or header.lower() == 'type'):
+                    header.lower() == 'identifier' or header.lower() == 'title' or header.lower() == 'type'):
                 error.append(header)
             elif header.lower() not in self.header_modified:
                 warning.append(header)
@@ -81,12 +89,12 @@ class Headerlist:
             first = True
         return text
 class Atomic:
-    def __init__(self, id, title, alternative, targetUrl, type, assesses, comesAfter, alternativeContent, requires,
+    def __init__(self, identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires,
                  isPartOf, isFormatOf):
-        self.id = id
+        self.identifier = identifier
         self.title = title
-        self.alternative = alternative
-        self.targetUrl = targetUrl
+        self.description = description
+        self.url = url
         self.type = type
         self.assesses = assesses
         self.comesAfter = comesAfter
@@ -98,59 +106,47 @@ class Atomic:
     def confirm_fields(self, warning_list):
         list_error = []
         list_warning = []
-        if self.alternative is not None:
-            if len(self.id) == 0:
-                list_error.append('ID')
-                # warning_list.add_error("ERROR: Missing ID. ")
+        if self.identifier is not None:
+            if len(self.identifier) == 0:
+                list_error.append('identifier')
         if self.title is not None:
             if len(self.title) == 0:
                 list_error.append('title')
-                # warning_list.add_error("ERROR: Missing title in " + self.id)
         if self.type is not None:
             if len(self.type) == 0:
                 list_error.append('type')
-                # warning_list.add_error("ERROR: Missing type in " + self.id)
-
-        if self.alternative is not None:
-            if len(self.alternative) == 0:
+        if self.description is not None:
+            if len(self.description) == 0:
                 list_warning.append('alternative')
-                # warning_list.add_missing_field("Missing field: alternative in " + self.id)
-        if self.targetUrl is not None:
-            if len(self.targetUrl) == 0:
-                list_warning.append('targetUrl')
-                # warning_list.add_missing_field("Missing field: URL in " + self.id)
+        if self.url is not None:
+            if len(self.url) == 0:
+                list_warning.append('url')
         if self.assesses is not None:
             if len(self.assesses) == 0:
                 list_warning.append('assesses')
-                # warning_list.add_missing_field("Missing field: assesses relationships in " + self.id)
         if self.comesAfter is not None:
             if len(self.comesAfter) == 0:
                 list_warning.append('comesAfter')
-                # warning_list.add_missing_field("Missing field: comesAfter relationships in " + self.id)
         if self.alternativeContent is not None:
             if len(self.alternativeContent) == 0:
                 list_warning.append('alternativeContent')
-                # warning_list.add_missing_field("Missing field: alternativeContent relationships in " + self.id)
         if self.requires is not None:
             if len(self.requires) == 0:
                 list_warning.append('requires')
-                # warning_list.add_missing_field("Missing field: requires relationships in " + self.id)
         if self.isPartOf is not None:
             if len(self.isPartOf) == 0:
                 list_warning.append('isPartOf')
-                # warning_list.add_missing_field("Missing field: isPartOf relationships in " + self.id)
         if self.isFormatOf is not None:
             if len(self.isFormatOf) == 0:
                 list_warning.append('isFormatOf')
-                # warning_list.add_missing_field("Warning: Missing isFormatOf relationships in " + self.id)
 
         error = self.print_fields(list_error)
         warning = self.print_fields(list_warning)
 
         if error:
-            warning_list.add_error("ERROR: Missing the following field(s): " + error + " on row ID: "+self.id)
+            warning_list.add_error("ERROR: Missing the following field(s): " + error + " on row ID: "+self.identifier)
         if warning:
-            warning_list.add_missing_field("The following field(s) are empty: " + warning + " on row ID: "+self.id)
+            warning_list.add_missing_field("The following field(s) are empty: " + warning + " on row ID: "+self.identifier)
 
     def print_fields(self, fieldname):
         text = ''

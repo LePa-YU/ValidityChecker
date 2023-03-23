@@ -20,26 +20,30 @@ def read_file(warning_list, header_list, complete_header_list):
             header_list.header_original = csv_reader.fieldnames
             fieldnames = ','.join(csv_reader.fieldnames).lower().replace(" ", "").split(",")
 
+            if 'identifier' not in fieldnames:
+                return 0, 0
+
             header_list.header_modified = fieldnames
             header_list.check_header(warning_list, complete_header_list)
             header_list.add_header(complete_header_list)
+
 
             csv_reader.fieldnames = header_list.header_modified
 
             for row in csv_reader:
                 try:
                     if row['type'] == 'aER' or row['type'] == 'iER' or row['type'] == 'rER':
-                        file_dict[row['id']] = func.Composite(row['id'], row['title'], row['alternative'], row['targeturl'],
+                        file_dict[row['identifier']] = func.Composite(row['identifier'], row['title'], row['description'], row['url'],
                                                            row['type'], row['assesses'], row['comesafter'],
                                                            row['alternativecontent'], row['requires'], row['ispartof'],
                                                            row['isformatof'])
-                        file_dict[row['id']].confirm_fields(warning_list)
+                        file_dict[row['identifier']].confirm_fields(warning_list)
                     else:
-                        file_dict[row['id']] = func.Atomic(row['id'], row['title'], row['alternative'], row['targeturl'],
+                        file_dict[row['identifier']] = func.Atomic(row['identifier'], row['title'], row['description'], row['url'],
                                                            row['type'], row['assesses'], row['comesafter'],
                                                            row['alternativecontent'], row['requires'], row['ispartof'],
                                                            row['isformatof'])
-                        file_dict[row['id']].confirm_fields(warning_list)
+                        file_dict[row['identifier']].confirm_fields(warning_list)
                 except KeyError as ke:
                     print('Key ERROR: Please check that your csv header has the required fields. See: ', ke)
                     break
@@ -52,7 +56,7 @@ def read_file(warning_list, header_list, complete_header_list):
 
 def check_dict(file_dict, warning_list):
     for key, er in file_dict.items():
-        confirm_relationships(file_dict, key, er, warning_list)
+        confirm_relationships(key, er, warning_list)
         confirm_disconnected_node(file_dict, key, er, warning_list)
 
 # CONFIRM_RELATIONSHIPS
@@ -61,7 +65,7 @@ def check_dict(file_dict, warning_list):
 # Check for iER, aER, rER relationships
 ## iER, aER must have a requires or comesAfter
 ## rER must have an assesses relationship
-def confirm_relationships(file_dict, key, er, warning_list):
+def confirm_relationships(key, er, warning_list):
     # for key, er in file_dict.items():
     # if er.requires:
     #     list = er.requires.replace(" ", "").split(",")
@@ -93,22 +97,27 @@ def confirm_disconnected_node(file_dict, key, er, warning_list):
     if not er.requires and not er.assesses and not er.comesAfter and not er.alternativeContent and not er.isPartOf \
             and not er.isFormatOf:
         for key2, er2 in file_dict.items():
-            if er2.requires is file_dict[key].id is file_dict[key].id or er2.assesses is file_dict[key].id or er2.comesAfter \
-                is file_dict[key].id or er2.alternativeContent is file_dict[key].id or er2.isPartOf is file_dict[key].id \
-                or er2.isFormatOf is file_dict[key].id:
+            if er2.requires is file_dict[key].identifier is file_dict[key].identifier or er2.assesses is file_dict[key].identifier or er2.comesAfter \
+                is file_dict[key].identifier or er2.alternativeContent is file_dict[key].identifier or er2.isPartOf is file_dict[key].identifier \
+                or er2.isFormatOf is file_dict[key].identifier:
                 check = True
                 break
         if check is False and er.title != 'End' and er.title != 'Start':
-            warning_list.add_warning("Warning: No relationships found for ID: "+file_dict[key].id)
+            warning_list.add_warning("Warning: No relationships found for ID: "+file_dict[key].identifier)
 
 
 
 def main():
-    complete_header_list = ['ID', 'title', 'alternative', 'targetUrl', 'type', 'assesses', 'comesAfter',
+    complete_header_list = ['identifier', 'title', 'description', 'url', 'type', 'assesses', 'comesAfter',
                             'alternativeContent', 'requires', 'isPartOf', 'isFormatOf']
     warning_list = func.WarningList()
     header_list = func.Headerlist()
     file_dict, warning_list = read_file(warning_list, header_list, complete_header_list)
+
+    if file_dict == 0 and warning_list == 0:
+        print('Critical error in header. Please ensure they match the MAP document.')
+        raise SystemExit
+
     check_dict(file_dict, warning_list)
 
     # input("Press enter to continue...")
