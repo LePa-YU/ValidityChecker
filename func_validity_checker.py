@@ -82,7 +82,7 @@ class Headerlist:
         return text
 class Atomic:
     def __init__(self, id, title, alternative, targetUrl, type, assesses, comesAfter, alternativeContent, requires,
-                 isRequiredBy, isPartOf, isFormatOf):
+                 isPartOf, isFormatOf):
         self.id = id
         self.title = title
         self.alternative = alternative
@@ -92,7 +92,6 @@ class Atomic:
         self.comesAfter = comesAfter
         self.alternativeContent = alternativeContent
         self.requires = requires
-        self.isRequiredBy = isRequiredBy
         self.isPartOf = isPartOf
         self.isFormatOf = isFormatOf
 
@@ -136,10 +135,6 @@ class Atomic:
             if len(self.requires) == 0:
                 list_warning.append('requires')
                 # warning_list.add_missing_field("Missing field: requires relationships in " + self.id)
-        if self.isRequiredBy is not None:
-            if len(self.isRequiredBy) == 0:
-                list_warning.append('isRequiredBy')
-                # warning_list.add_missing_field("Missing field: isRequiredBy relationships in " + self.id)
         if self.isPartOf is not None:
             if len(self.isPartOf) == 0:
                 list_warning.append('isPartOf')
