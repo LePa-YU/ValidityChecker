@@ -1,9 +1,14 @@
 import os
 from csv import DictReader
 import func_validity_checker as func
+import func_helper as helper
 
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
+
+# TODO: Spellcheck remove white space
+# TODO: Warning for empty lines - remove from other checks
+
 
 # Datastructure
 # {ID1: { data for ID1 from CSV }, ID2: { data for ID2 from CSV } ... IDN: { data for IDN from CSV }}
@@ -17,8 +22,8 @@ def read_file(warning_list, header_list, complete_header_list):
         with open(filepath, encoding="utf-8-sig") as csvfile:
             csv_reader = DictReader(csvfile)
             file_dict = {}
-            header_list.header_original = csv_reader.fieldnames
-            fieldnames = ','.join(csv_reader.fieldnames).lower().replace(" ", "").split(",")
+            header_list.header_original = [x.strip(' ') for x in csv_reader.fieldnames]
+            fieldnames = ','.join(header_list.header_original).lower().replace(" ", "").split(",")
 
             if 'identifier' not in fieldnames:
                 return 0, 0
@@ -26,13 +31,20 @@ def read_file(warning_list, header_list, complete_header_list):
             header_list.header_modified = fieldnames
             header_list.check_header(warning_list, complete_header_list)
             header_list.add_header(complete_header_list)
-
-
             csv_reader.fieldnames = header_list.header_modified
+
+            empty_row = []
 
             for row in csv_reader:
                 try:
-                    if row['type'] == 'aER' or row['type'] == 'iER' or row['type'] == 'rER':
+                    # print(row)
+                    # input("Press enter to continue...")
+
+                    if row['title'] == '' and row['description'] == '' and row['url'] == '' and row['type'] == '' and row['comesafter'] == '' and row['alternativecontent'] == '' and row['requires'] == '' and row['ispartof'] == '' and row['isformatof'] == '':
+                        empty_row.append(row['identifier'])
+                        # warning_list.add_warning('Warning: the following row is empty. ID: '+row['identifier'])
+
+                    elif row['type'] == 'aER' or row['type'] == 'iER' or row['type'] == 'rER':
                         file_dict[row['identifier']] = func.Composite(row['identifier'], row['title'], row['description'], row['url'],
                                                            row['type'], row['assesses'], row['comesafter'],
                                                            row['alternativecontent'], row['requires'], row['ispartof'],
@@ -48,6 +60,9 @@ def read_file(warning_list, header_list, complete_header_list):
                     print('Key ERROR: Please check that your csv header has the required fields. See: ', ke)
                     break
             # input("Press enter to continue...")
+            if empty_row:
+                text = helper.print_fields(empty_row)
+                warning_list.add_warning("Warning: Empty row(s): " + text)
     else:
         print("No file selected.")
         raise SystemExit
@@ -55,29 +70,22 @@ def read_file(warning_list, header_list, complete_header_list):
     return file_dict, warning_list
 
 def check_dict(file_dict, warning_list):
+    # TODO: make sure that list of errors is in order
+    start_node = False
+    end_node = False
     for key, er in file_dict.items():
         confirm_relationships(key, er, warning_list)
         confirm_disconnected_node(file_dict, key, er, warning_list)
+        start_node = confirm_start_end_nodes(key, er, warning_list, start_node, 'start')
+        end_node = confirm_start_end_nodes(key, er, warning_list, end_node, 'end')
 
 # CONFIRM_RELATIONSHIPS
 # Issue warning if a relationship is missing \\DEPRICATED since isRequiredBy is removed
-# Check for circular logic in relationships: requires
+# TODO Check for circular logic in relationships: requires
 # Check for iER, aER, rER relationships
 ## iER, aER must have a requires or comesAfter
 ## rER must have an assesses relationship
 def confirm_relationships(key, er, warning_list):
-    # for key, er in file_dict.items():
-    # if er.requires:
-    #     list = er.requires.replace(" ", "").split(",")
-    #     for n in list:
-    #         if key not in file_dict[n].isRequiredBy:
-    #             warning_list.add_warning("Warning: Missing relationship (isRequiredBy) in "+file_dict[n].id+" for "+key)
-    # elif er.isRequiredBy:
-    #     list = er.isRequiredBy.replace(" ","").split(",")
-    #     for n in list:
-    #         if key not in file_dict[n].requires:
-    #             warning_list.add_warning("Warning: Missing relationship (requires) in "+file_dict[n].id+" for "+key)
-
     if er.type == 'aER' or er.type == 'iER':
         if er.requires == '' and er.comesAfter == '':
             warning_list.add_warning("Warning: Missing relationship (requires or comesAfter) for ID: " + key)
@@ -86,10 +94,6 @@ def confirm_relationships(key, er, warning_list):
         if er.assesses == '':
             warning_list.add_warning("Warning: Missing relationship (assesses) for ID: " + key)
 
-    # input("Press enter to continue...")
-
-
-
 # assesses,comesAfter,alternativeContent,requires,isPartOf,isFormatOf
 def confirm_disconnected_node(file_dict, key, er, warning_list):
     # print(er.requires)
@@ -97,15 +101,62 @@ def confirm_disconnected_node(file_dict, key, er, warning_list):
     if not er.requires and not er.assesses and not er.comesAfter and not er.alternativeContent and not er.isPartOf \
             and not er.isFormatOf:
         for key2, er2 in file_dict.items():
-            if er2.requires is file_dict[key].identifier is file_dict[key].identifier or er2.assesses is file_dict[key].identifier or er2.comesAfter \
-                is file_dict[key].identifier or er2.alternativeContent is file_dict[key].identifier or er2.isPartOf is file_dict[key].identifier \
-                or er2.isFormatOf is file_dict[key].identifier:
+            if er2.requires is file_dict[key].identifier is file_dict[key].identifier or er2.assesses is file_dict[key].identifier \
+                    or er2.comesAfter is file_dict[key].identifier or er2.alternativeContent is file_dict[key].identifier \
+                    or er2.isPartOf is file_dict[key].identifier or er2.isFormatOf is file_dict[key].identifier:
                 check = True
                 break
         if check is False and er.title != 'End' and er.title != 'Start':
             warning_list.add_warning("Warning: No relationships found for ID: "+file_dict[key].identifier)
 
 
+# Confirm if a start or end node exists
+def confirm_start_end_nodes(key, er, warning_list, node, type):
+    list = []
+    list_comesAfter = []
+    if er.type.lower() == type and node is not False:
+        warning_list.add_error("ERROR: There can only be one " + type +" node.")
+    elif er.type.lower() == type:
+
+        node = er.identifier
+        list, comesAfter, list_comesAfter = check_if_field_exists(er, list, list_comesAfter)
+        warnings = helper.print_fields(list)
+        warning_comesAfter = helper.print_fields(list_comesAfter)
+
+        if warning_comesAfter:
+            if type == 'end' and er.comesAfter and len(warnings) == 0:
+                pass
+            else:
+                if type == 'end' and len(warnings) > 0:
+                    warning_list.add_error(
+                        "ERROR: The " + type + " node should not have any other relationships. Check the following: " + warnings + " on row ID: " + er.identifier + ". Exceptions are Start node comesBefore and End node comesAfter.")
+                else:
+                    warning_list.add_error("ERROR: The " +type+ " node should not have any other relationships. Check the following: " + warning_comesAfter + " on row ID: "+er.identifier + ". Exceptions are Start node comesBefore and End node comesAfter.")
+
+    return node
+
+def check_if_field_exists(er, list, list_comesAfter):
+    comesAfter = False
+    if er.assesses != '':
+        list.append('assesses')
+        list_comesAfter.append('assesses')
+    if er.comesAfter != '':
+        list_comesAfter.append('comesAfter')
+        comesAfter = True
+    if er.alternativeContent != '':
+        list.append('alternativeContent')
+        list_comesAfter.append('alternativeContent')
+    if er.requires != '':
+        list.append('requires')
+        list_comesAfter.append('requires')
+    if er.isPartOf != '':
+        list.append('isPartOf')
+        list_comesAfter.append('isPartOf')
+    if er.isFormatOf != '':
+        list.append('isFormatOf')
+        list_comesAfter.append('isFormatOf')
+
+    return list, comesAfter, list_comesAfter
 
 def main():
     complete_header_list = ['identifier', 'title', 'description', 'url', 'type', 'assesses', 'comesAfter',
@@ -119,8 +170,6 @@ def main():
         raise SystemExit
 
     check_dict(file_dict, warning_list)
-
-    # input("Press enter to continue...")
 
     while True:
         warning_list.print_msg()

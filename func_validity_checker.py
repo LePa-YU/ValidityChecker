@@ -58,7 +58,9 @@ class Headerlist:
                 error.append(header)
             elif header.lower() not in self.header_modified:
                 warning.append(header)
-            elif header not in self.header_original:
+            elif header.strip() not in self.header_original:
+                print(self.header_original)
+                print(header)
                 spelling.append(header)
 
         if error:
@@ -88,6 +90,7 @@ class Headerlist:
 
             first = True
         return text
+
 class Atomic:
     def __init__(self, identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires,
                  isPartOf, isFormatOf):
