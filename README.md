@@ -26,10 +26,13 @@ The program can either:
 3. Quit the program (input: quit or q)
 
 The checks performed by the validity checker are:
-1. Check the header of the csv file given. The header should have the following columns: ID, title, type. All other columns are optional.
+1. Check the header of the csv file given. The header should have the following columns: identifier, title, type. All other columns are optional.
 2. Check the header for spelling mistakes. This only works for simple spelling mistakes such as incorrect capitalization.
 3. Check if a field is empty within the csv. Will give an error only if the field is mandatory (ID, title or type). The other empty fields will be recorded and can be viewed with the empty field (f) command.
-4. (Will be edited) Check if the requires field has a value and makes sure that that value is backwards complicit with the isRequiredBy value within the ID it points to. E.g. ID 11 requires points to IDs 21 and 197. IDs 21 and 197 have a isRequiredBy value of 11. Will add an error if an ID is missing. 
+4. Check for start or end nodes. These nodes are special and should not have any other relationships except for comesAfter (end node). There should only be one start or end node in the dataset.
+5. Check for empty rows with only identifier present. Empty rows with no identifier within the dataset should be deleted.
+6. Check for each aER and iER for a comesAfter or requires relationship.
+7. Check for each rER for an assesses relationship.
 
 TBD:
 - Test cases

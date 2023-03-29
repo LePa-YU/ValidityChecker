@@ -59,8 +59,6 @@ class Headerlist:
             elif header.lower() not in self.header_modified:
                 warning.append(header)
             elif header.strip() not in self.header_original:
-                print(self.header_original)
-                print(header)
                 spelling.append(header)
 
         if error:
@@ -120,7 +118,7 @@ class Atomic:
                 list_error.append('type')
         if self.description is not None:
             if len(self.description) == 0:
-                list_warning.append('alternative')
+                list_warning.append('description')
         if self.url is not None:
             if len(self.url) == 0:
                 list_warning.append('url')
