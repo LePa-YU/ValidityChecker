@@ -1,6 +1,3 @@
-# TODO: Spellcheck remove white space
-# TODO: Warning for empty lines - remove from other checks
-
 def check_dict(file_dict, warning_list):
     # TODO: make sure that list of errors is in order
     start_node = False
@@ -67,28 +64,32 @@ def confirm_start_end_nodes(key, er, warning_list, node, type):
 
     return node
 
-def check_if_field_exists(er, list, list_comesAfter):
+# def check_field_type(file_dict, key, er, warning_list):
+#     TODO
+
+
+def check_if_field_exists(er, er_list, list_comesAfter):
     comesAfter = False
     if er.assesses != '':
-        list.append('assesses')
+        er_list.append('assesses')
         list_comesAfter.append('assesses')
     if er.comesAfter != '':
         list_comesAfter.append('comesAfter')
         comesAfter = True
     if er.alternativeContent != '':
-        list.append('alternativeContent')
+        er_list.append('alternativeContent')
         list_comesAfter.append('alternativeContent')
     if er.requires != '':
-        list.append('requires')
+        er_list.append('requires')
         list_comesAfter.append('requires')
     if er.isPartOf != '':
-        list.append('isPartOf')
+        er_list.append('isPartOf')
         list_comesAfter.append('isPartOf')
     if er.isFormatOf != '':
-        list.append('isFormatOf')
+        er_list.append('isFormatOf')
         list_comesAfter.append('isFormatOf')
 
-    return list, comesAfter, list_comesAfter
+    return er_list, comesAfter, list_comesAfter
 
 def print_fields(fieldname):
     text = ''
