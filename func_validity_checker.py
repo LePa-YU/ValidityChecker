@@ -1,3 +1,5 @@
+import func_helper as helper
+
 class WarningList:
     def __init__(self):
         self.warning = []
@@ -26,8 +28,8 @@ class WarningList:
             print(str(idx+1) + " " + x)
 
     def print_msg(self):
-        print("There are "+str(len(self.error))+" errors, "+str(len(self.warning))+" warnings, and " +
-              str(len(self.missing_fields))+" empty fields.")
+        print("There are "+str(len(self.error))+" error(s), "+str(len(self.warning))+" warning(s), and " +
+              str(len(self.missing_fields))+" empty field(s).")
 
 
 class Headerlist:
@@ -62,32 +64,14 @@ class Headerlist:
                 spelling.append(header)
 
         if error:
-            text = self.print_columns(error)
+            text = helper.print_fields(error)
             warning_list.add_error("ERROR: Missing column(s): "+text)
         if warning:
-            text = self.print_columns(warning)
+            text = helper.print_fields(warning)
             warning_list.add_warning("Warning: Missing column(s): "+text)
         if spelling:
-            text = self.print_columns(spelling)
+            text = helper.print_fields(spelling)
             warning_list.add_warning("Warning: Check spelling: "+text)
-
-
-    def print_columns(self, error):
-        text = ''
-        first = False
-        for idx, x in enumerate(error):
-            if idx == 0 and len(error) > 1 and first is False:
-                text = x + ", "
-            elif first is False:
-                text = x
-
-            if idx < len(error) - 1 and first is True:
-                text = text + x + ", "
-            if idx == len(error) - 1 and first is True:
-                text = text + x
-
-            first = True
-        return text
 
 class Atomic:
     def __init__(self, identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires,
@@ -141,29 +125,12 @@ class Atomic:
             if len(self.isFormatOf) == 0:
                 list_warning.append('isFormatOf')
 
-        error = self.print_fields(list_error)
-        warning = self.print_fields(list_warning)
+        error = helper.print_fields(list_error)
+        warning = helper.print_fields(list_warning)
 
         if error:
             warning_list.add_error("ERROR: Missing the following field(s): " + error + " on row ID: "+self.identifier)
         if warning:
             warning_list.add_missing_field("The following field(s) are empty: " + warning + " on row ID: "+self.identifier)
-
-    def print_fields(self, fieldname):
-        text = ''
-        first = False
-        for idx, x in enumerate(fieldname):
-            if idx == 0 and len(fieldname) > 1 and first is False:
-                text = x + ", "
-            elif first is False:
-                text = x
-
-            if idx < len(fieldname) - 1 and first is True:
-                text = text + x + ", "
-            if idx == len(fieldname) - 1 and first is True:
-                text = text + x
-
-            first = True
-        return text
 class Composite(Atomic):
     pass
