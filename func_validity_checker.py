@@ -74,13 +74,13 @@ class Headerlist:
             warning_list.add_warning("Warning: Check spelling: "+text)
 
 class Atomic:
-    def __init__(self, identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires,
+    def __init__(self, identifier, title, description, url, oer_type, assesses, comesAfter, alternativeContent, requires,
                  isPartOf, isFormatOf):
         self.identifier = identifier
         self.title = title
         self.description = description
         self.url = url
-        self.type = type
+        self.oer_type = oer_type
         self.assesses = assesses
         self.comesAfter = comesAfter
         self.alternativeContent = alternativeContent
@@ -91,14 +91,15 @@ class Atomic:
     def confirm_fields(self, warning_list):
         list_error = []
         list_warning = []
+        type_warning = []
         if self.identifier is not None:
             if len(self.identifier) == 0:
                 list_error.append('identifier')
         if self.title is not None:
             if len(self.title) == 0:
                 list_error.append('title')
-        if self.type is not None:
-            if len(self.type) == 0:
+        if self.oer_type is not None:
+            if len(self.oer_type) == 0:
                 list_error.append('type')
         if self.description is not None:
             if len(self.description) == 0:
@@ -109,6 +110,9 @@ class Atomic:
         if self.assesses is not None:
             if len(self.assesses) == 0:
                 list_warning.append('assesses')
+            elif not self.assesses.isdigit():
+                type_warning.append('assesses [type:integer]')
+                print(type(self.assesses))
         if self.comesAfter is not None:
             if len(self.comesAfter) == 0:
                 list_warning.append('comesAfter')
@@ -127,10 +131,13 @@ class Atomic:
 
         error = helper.print_fields(list_error)
         warning = helper.print_fields(list_warning)
+        type_warnings = helper.print_fields(type_warning)
 
         if error:
             warning_list.add_error("ERROR: Missing the following field(s): " + error + " on row ID: "+self.identifier)
         if warning:
             warning_list.add_missing_field("The following field(s) are empty: " + warning + " on row ID: "+self.identifier)
+        if type_warnings:
+            warning_list.add_error("The following field(s) have an incorrect type: " + type_warnings + " on row ID: "+self.identifier)
 class Composite(Atomic):
     pass

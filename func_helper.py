@@ -1,3 +1,64 @@
+import func_validity_checker as func
+from csv import DictReader
+def open_file(warning_list, header_list, complete_header_list, filepath):
+    with open(filepath, encoding="utf-8-sig") as csvfile:
+        csv_reader = DictReader(csvfile)
+        file_dict = {}
+        header_list.header_original = [x.strip(' ') for x in csv_reader.fieldnames]
+        fieldnames = ','.join(header_list.header_original).lower().replace(" ", "").split(",")
+
+        if 'identifier' not in fieldnames:
+            return 0, 0
+
+        header_list.header_modified = fieldnames
+        header_list.check_header(warning_list, complete_header_list)
+        header_list.add_header(complete_header_list)
+        csv_reader.fieldnames = header_list.header_modified
+
+        empty_row = []
+        empty_row_full = []
+
+        for count, row in enumerate(csv_reader):
+            try:
+                if (row['title'] == '' or row['title'] == None) and \
+                        (row['description'] == '' or row['description'] == None) and \
+                        (row['url'] == '' or row['url'] == None) and \
+                        (row['type'] == '' or row['type'] == None) and \
+                        (row['comesafter'] == '' or row['comesafter'] == None) and \
+                        (row['alternativecontent'] == '' or row['alternativecontent'] == None) and \
+                        (row['requires'] == '' or row['requires'] == None) and \
+                        (row['ispartof'] == '' or row['ispartof'] == None) and\
+                        (row['isformatof'] == '' or row['isformatof'] == None):
+                    if row['identifier'] == '':
+                        empty_row_full.append(str(count))
+                    else:
+                        empty_row.append(row['identifier'])
+
+                elif row['type'] == 'aER' or row['type'] == 'iER' or row['type'] == 'rER':
+                    file_dict[row['identifier']] = func.Composite(row['identifier'], row['title'], row['description'], row['url'],
+                                                       row['type'], row['assesses'], row['comesafter'],
+                                                       row['alternativecontent'], row['requires'], row['ispartof'],
+                                                       row['isformatof'])
+                    file_dict[row['identifier']].confirm_fields(warning_list)
+                else:
+                    file_dict[row['identifier']] = func.Atomic(row['identifier'], row['title'], row['description'], row['url'],
+                                                       row['type'], row['assesses'], row['comesafter'],
+                                                       row['alternativecontent'], row['requires'], row['ispartof'],
+                                                       row['isformatof'])
+                    file_dict[row['identifier']].confirm_fields(warning_list)
+            except KeyError as ke:
+                print('Key ERROR: Please check that your csv header has the required fields. See: ', ke)
+                break
+        # input("Press enter to continue...")
+        if empty_row:
+            text = print_fields(empty_row)
+            warning_list.add_warning("Warning: Empty row(s): " + text)
+        if empty_row_full:
+            text = print_fields(empty_row_full)
+            warning_list.add_warning("Warning: Empty row(s): " + text + ". Please make sure rows that are fully empty are deleted.")
+
+    return file_dict, warning_list
+
 def check_dict(file_dict, warning_list):
     # TODO: make sure that list of errors is in order
     start_node = False
@@ -15,11 +76,11 @@ def check_dict(file_dict, warning_list):
 ## iER, aER must have a requires or comesAfter
 ## rER must have an assesses relationship
 def confirm_relationships(key, er, warning_list):
-    if er.type == 'aER' or er.type == 'iER':
+    if er.oer_type == 'aER' or er.oer_type == 'iER':
         if er.requires == '' and er.comesAfter == '':
             warning_list.add_warning("Warning: Missing relationship (requires or comesAfter) for ID: " + key)
 
-    elif er.type == 'rER':
+    elif er.oer_type == 'rER':
         if er.assesses == '':
             warning_list.add_warning("Warning: Missing relationship (assesses) for ID: " + key)
 
@@ -40,12 +101,12 @@ def confirm_disconnected_node(file_dict, key, er, warning_list):
 
 
 # Confirm if a start or end node exists
-def confirm_start_end_nodes(key, er, warning_list, node, type):
+def confirm_start_end_nodes(key, er, warning_list, node, oer_type):
     list = []
     list_comesAfter = []
-    if er.type.lower() == type and node is not False:
-        warning_list.add_error("ERROR: There can only be one " + type +" node.")
-    elif er.type.lower() == type:
+    if er.oer_type.lower() == oer_type and node is not False:
+        warning_list.add_error("ERROR: There can only be one " + oer_type +" node.")
+    elif er.oer_type.lower() == oer_type:
 
         node = er.identifier
         list, comesAfter, list_comesAfter = check_if_field_exists(er, list, list_comesAfter)
@@ -53,19 +114,20 @@ def confirm_start_end_nodes(key, er, warning_list, node, type):
         warning_comesAfter = print_fields(list_comesAfter)
 
         if warning_comesAfter:
-            if type == 'end' and er.comesAfter and len(warnings) == 0:
+            if oer_type == 'end' and er.comesAfter and len(warnings) == 0:
                 pass
             else:
-                if type == 'end' and len(warnings) > 0:
+                if oer_type == 'end' and len(warnings) > 0:
                     warning_list.add_error(
-                        "ERROR: The " + type + " node should not have any other relationships. Check the following: " + warnings + " on row ID: " + er.identifier + ". Exceptions are Start node comesBefore and End node comesAfter.")
+                        "ERROR: The " + oer_type + " node should not have any other relationships. Check the following: " + warnings + " on row ID: " + er.identifier + ". Exceptions are Start node comesBefore and End node comesAfter.")
                 else:
-                    warning_list.add_error("ERROR: The " +type+ " node should not have any other relationships. Check the following: " + warning_comesAfter + " on row ID: "+er.identifier + ". Exceptions are Start node comesBefore and End node comesAfter.")
+                    warning_list.add_error("ERROR: The " +oer_type+ " node should not have any other relationships. Check the following: " + warning_comesAfter + " on row ID: "+er.identifier + ". Exceptions are Start node comesBefore and End node comesAfter.")
 
     return node
 
 # def check_field_type(file_dict, key, er, warning_list):
 #     TODO
+
 
 
 def check_if_field_exists(er, er_list, list_comesAfter):
