@@ -95,9 +95,13 @@ class Atomic:
         if self.identifier is not None:
             if len(self.identifier) == 0:
                 list_error.append('identifier')
+            elif not self.identifier.isalnum():
+                type_warning.append('identifier [type:alphanumeric]')
         if self.title is not None:
             if len(self.title) == 0:
                 list_error.append('title')
+            elif type(self.title) != str:
+                type_warning.append('title [type:integer]')
         if self.oer_type is not None:
             if len(self.oer_type) == 0:
                 list_error.append('type')
@@ -114,6 +118,8 @@ class Atomic:
                 type_warning.append('assesses [type:integer]')
             if len(self.assesses) != 0 and self.oer_type == 'iER':
                 type_warning.append('iER should not have an assess property')
+            elif len(self.assesses) != 0 and self.oer_type == 'aER':
+                type_warning.append('aER should not have an assess property')
         if self.comesAfter is not None:
             if len(self.comesAfter) == 0:
                 list_warning.append('comesAfter')
