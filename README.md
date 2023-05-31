@@ -37,3 +37,32 @@ The checks performed by the validity checker are:
 TBD:
 - Test cases
 - Circular logic check 
+
+
+#Dataset Updater
+To run the Dataset Updater please install the following dependencies:
+- tkinter
+
+Instructions to installing tkinter
+- Make sure you have python 3.x installed: python --version
+- Note: The code is tested on Python 3.10.0
+- Make sure you have pip installed: pip -V
+- See if tkinter is already installed: python -m tkinter
+- Install using: pip install tk
+- See further instructions: https://www.tutorialspoint.com/how-to-install-tkinter-in-python
+
+To execute the code please run the following file:
+- update_dataset.py
+
+When run, the Dataset Updater will prompt the user to input a file from their file explorer. There are a few example data files in the /Datasets/ folder within the ValidityChecker.
+
+The file chosen should be a .csv file. 
+
+The program can either:
+1. Add row (input: a). This is TBD
+2. Delete row (input: d)
+3. Delete empty rows (input: del)
+4. Edit row (input: e). This is TBD 
+5. Print current (input: p)
+6. Save current (input: s)
+7. Quit (input: q)
