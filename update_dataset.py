@@ -49,11 +49,17 @@ if __name__ == '__main__':
                 file_df = helper.shift_nodes_after_empty_lines(file_df)
 
             case "e":
+                # identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires, contains, isPartOf, isFormatOf
                 print("Edit row")
-                print("TBD")
-
+                file_df = helper.edit(file_df)
             case "p":
-                print(file_df.to_markdown())
+                with pd.option_context('display.max_rows', None,
+                                       'display.max_columns', None,
+                                       'display.precision', 3,
+                                       'display.width', None,
+                                       'display.max_colwidth', -1,
+                                       ):
+                    print(file_df)
             case "s":
                 helper.save_file(file_df, filepath)
             case "q":
