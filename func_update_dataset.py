@@ -3,9 +3,10 @@ import pandas as pd
 import numpy as np
 
 def open_file(filepath):
-    df = pd.read_csv(filepath)
-    df.set_index('identifier', inplace=True)
+    df = pd.read_csv(filepath, encoding="utf-8")
     df = df.rename(columns=lambda x: x.strip())
+    df['identifier'] = df['identifier'].astype('Int64')
+    df.set_index('identifier', inplace=True)
 
     return df
 
@@ -15,43 +16,59 @@ def save_file(df, filepath):
 
     df.to_csv(save_file_location, encoding='utf-8')
 
-def edit(df):
-    print("Please indicate what row you wish to edit.")
-    id = input("Row ID:")
-    new_row = {
-        "title": df.at[int(id), "title"],
-        "description": df.at[int(id), "description"],
-        "url": df.at[int(id), "url"],
-        "type": df.at[int(id), "type"],
-        "assesses": df.at[int(id), "assesses"],
-        "comesAfter": df.at[int(id), "comesAfter"],
-        "alternativeContent": df.at[int(id), "alternativeContent"],
-        "requires": df.at[int(id), "requires"],
-        "contains": df.at[int(id), "contains"],
-        "isPartOf": df.at[int(id), "isPartOf"],
-        "isFormatOf": df.at[int(id), "isFormatOf"],
-    }
-
-    return update_row(df, id, new_row)
-
 def add_row(df):
     new_row = {
-        "title": df.at[int(id), "title"],
-        "description": df.at[int(id), "description"],
-        "url": df.at[int(id), "url"],
-        "type": df.at[int(id), "type"],
-        "assesses": df.at[int(id), "assesses"],
-        "comesAfter": df.at[int(id), "comesAfter"],
-        "alternativeContent": df.at[int(id), "alternativeContent"],
-        "requires": df.at[int(id), "requires"],
-        "contains": df.at[int(id), "contains"],
-        "isPartOf": df.at[int(id), "isPartOf"],
-        "isFormatOf": df.at[int(id), "isFormatOf"],
+        "title": np.nan,
+        "description": np.nan,
+        "url": np.nan,
+        "type": np.nan,
+        "assesses": np.nan,
+        "comesAfter": np.nan,
+        "alternativeContent": np.nan,
+        "requires": np.nan,
+        "contains": np.nan,
+        "isPartOf": np.nan,
+        "isFormatOf": np.nan,
     }
 
-    return update_row(df, id, new_row)
+    print("Do you want to: add to the end (e), add to specific index (i).")
+    choice = input("input: ")
+    match choice:
+        case "e":
+            # Add to the end of the dataframe, before the "end" node
+            df.loc[df.tail(1).index.item() - 0.5] = new_row
+            df = df.sort_index().reset_index(drop=True)
+            identifier = df.tail(1).index.item() - 1
+        case "i":
+            print("Give index:")
+            print("TBD")
+            # shift_row(index, df, new_row)
+            # index = input("input: ")
+        case _:
+            print("Did not catch that. Try again?")
 
-def update_row(df, id, new_row):
+    return update_row(df, identifier, new_row)
+
+def edit(df):
+    print("Please indicate what row you wish to edit.")
+    identifier = input("Row ID:")
+    new_row = {
+        "title": df.at[int(identifier), "title"],
+        "description": df.at[int(identifier), "description"],
+        "url": df.at[int(identifier), "url"],
+        "type": df.at[int(identifier), "type"],
+        "assesses": df.at[int(identifier), "assesses"],
+        "comesAfter": df.at[int(identifier), "comesAfter"],
+        "alternativeContent": df.at[int(identifier), "alternativeContent"],
+        "requires": df.at[int(identifier), "requires"],
+        "contains": df.at[int(identifier), "contains"],
+        "isPartOf": df.at[int(identifier), "isPartOf"],
+        "isFormatOf": df.at[int(identifier), "isFormatOf"],
+    }
+
+    return update_row(df, identifier, new_row)
+
+def update_row(df, identifier, new_row):
     print("")
     print("What do you wish to edit? Please, select one of the following: ")
     print("title (t), "
@@ -66,12 +83,12 @@ def update_row(df, id, new_row):
           "isPartOf (ipo), "
           "isFormatOf (ifo), ")
     print("Do you want to see your current edits? Print (p), ",
-          "Done with edits to ID: " + id + ". Type (save) or (cancel)")
+          "Done with edits to ID: " + str(identifier) + ". Type (save) to save and exit or (cancel) to cancel and exit.")
 
     # input("Press enter to continue...")
 
     while True:
-        edit_choice = input('Edit: ')
+        edit_choice = input('input: ')
         match edit_choice:
             case "t":
                 print("Change title.")
@@ -109,7 +126,7 @@ def update_row(df, id, new_row):
             case "p":
                 print(new_row)
             case "save":
-                df = save_row(df, id, new_row)
+                df = save_row(df, identifier, new_row)
                 break
             case "cancel":
                 break
@@ -119,22 +136,20 @@ def update_row(df, id, new_row):
     # input("Press enter to continue...")
     return df
 
-def save_row(df, id, new_row):
+def save_row(df, identifier, new_row):
     print("Edit_row")
-    df.at[int(id), "title"] = new_row["title"]
-    df.at[int(id), "description"] = new_row["description"]
-    df.at[int(id), "url"] = new_row["url"]
-    df.at[int(id), "assesses"] = new_row["assesses"]
-    df.at[int(id), "comesAfter"] = new_row["comesAfter"]
-    df.at[int(id), "alternativeContent"] = new_row["alternativeContent"]
-    df.at[int(id), "requires"] = new_row["requires"]
-    df.at[int(id), "contains"] = new_row["contains"]
-    df.at[int(id), "isPartOf"] = new_row["isPartOf"]
-    df.at[int(id), "isFormatOf"] = new_row["isFormatOf"]
+    df.at[int(identifier), "title"] = new_row["title"]
+    df.at[int(identifier), "description"] = new_row["description"]
+    df.at[int(identifier), "url"] = new_row["url"]
+    df.at[int(identifier), "assesses"] = new_row["assesses"]
+    df.at[int(identifier), "comesAfter"] = new_row["comesAfter"]
+    df.at[int(identifier), "alternativeContent"] = new_row["alternativeContent"]
+    df.at[int(identifier), "requires"] = new_row["requires"]
+    df.at[int(identifier), "contains"] = new_row["contains"]
+    df.at[int(identifier), "isPartOf"] = new_row["isPartOf"]
+    df.at[int(identifier), "isFormatOf"] = new_row["isFormatOf"]
 
     return df
-
-
 
 def remove_empty_lines(df):
     df = df.dropna(how='all')

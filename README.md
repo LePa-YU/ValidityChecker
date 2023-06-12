@@ -39,9 +39,10 @@ TBD:
 - Circular logic check 
 
 
-#Dataset Updater
+# DatasetUpdater
 To run the Dataset Updater please install the following dependencies:
 - tkinter
+- python 3.10 or later
 
 Instructions to installing tkinter
 - Make sure you have python 3.x installed: python --version
@@ -62,7 +63,10 @@ The program can either:
 1. Add row (input: a). This is TBD
 2. Delete row (input: d)
 3. Delete empty rows (input: del)
-4. Edit row (input: e). This is TBD 
+4. Edit row (input: e). 
 5. Print current (input: p)
 6. Save current (input: s)
 7. Quit (input: q)
+
+Restrictions:
+1. Assuption that the index value is numeric

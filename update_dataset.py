@@ -36,7 +36,7 @@ if __name__ == '__main__':
         match choice:
             case "a":
                 print("Add row")
-                # file_df = helper.add_row(file_df)
+                file_df = helper.add_row(file_df)
 
             case "d":
                 print("Delete row")
