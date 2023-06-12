@@ -36,7 +36,7 @@ if __name__ == '__main__':
         match choice:
             case "a":
                 print("Add row")
-                print("TBD")
+                # file_df = helper.add_row(file_df)
 
             case "d":
                 print("Delete row")
@@ -53,13 +53,14 @@ if __name__ == '__main__':
                 print("Edit row")
                 file_df = helper.edit(file_df)
             case "p":
-                with pd.option_context('display.max_rows', None,
-                                       'display.max_columns', None,
-                                       'display.precision', 3,
-                                       'display.width', None,
-                                       'display.max_colwidth', -1,
-                                       ):
-                    print(file_df)
+                # with pd.option_context('display.max_rows', None,
+                #                        'display.max_columns', None,
+                #                        'display.precision', 3,
+                #                        'display.width', None,
+                #                        'display.max_colwidth', -1,
+                #                        ):
+                #     print(file_df)
+                print(file_df.to_string())
             case "s":
                 helper.save_file(file_df, filepath)
             case "q":
