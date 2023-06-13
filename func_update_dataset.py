@@ -31,21 +31,15 @@ def add_row(df):
         "isFormatOf": np.nan,
     }
 
-    print("Do you want to: add to the end (e), add to specific index (i).")
-    choice = input("input: ")
-    match choice:
-        case "e":
-            # Add to the end of the dataframe, before the "end" node
-            df.loc[df.tail(1).index.item() - 0.5] = new_row
-            df = df.sort_index().reset_index(drop=True)
-            identifier = df.tail(1).index.item() - 1
-        case "i":
-            print("Give index:")
-            print("TBD")
-            # shift_row(index, df, new_row)
-            # index = input("input: ")
-        case _:
-            print("Did not catch that. Try again?")
+    print("The add function will add a new line to the end of the file.")
+    # print(df.tail(1).index.item())
+    # print(float(df.tail(1).index.item()) - 0.5)
+
+    df.loc[int(df.tail(1).index.item()) - 0.5] = new_row
+    # print(df.to_string())
+
+    df = df.sort_index().reset_index(drop=True)
+    identifier = df.tail(1).index.item() - 1
 
     return update_row(df, identifier, new_row)
 
@@ -92,37 +86,37 @@ def update_row(df, identifier, new_row):
         match edit_choice:
             case "t":
                 print("Change title.")
-                new_row["title"] = input("Input: ")
+                new_row["title"] = input("title: ")
             case "d":
                 print("Change description")
-                new_row["description"] = input("Input: ")
+                new_row["description"] = input("description: ")
             case "u":
                 print("Change URL")
-                new_row["url"] = input("Input: ")
+                new_row["url"] = input("URL: ")
             case "type":
                 print("Change type")
-                new_row["type"] = input("Input:")
+                new_row["type"] = input("type:")
             case "a":
                 print("Change assesses relation")
-                new_row["assesses"] = input("Input: ")
+                new_row["assesses"] = input("assesses: ")
             case "ca":
                 print("Change comesAfter relation")
-                new_row["comesAfter"] = input("Input: ")
+                new_row["comesAfter"] = input("comesAfter: ")
             case "ac":
                 print("Change alternativeContent relation")
-                new_row["alternativeContent"] = input("Input: ")
+                new_row["alternativeContent"] = input("alternativeContent: ")
             case "r":
                 print("Change requires relation")
-                new_row["requires"] = input("Input: ")
+                new_row["requires"] = input("requires: ")
             case "c":
                 print("Change contains relation")
-                new_row["contains"] = input("Input: ")
+                new_row["contains"] = input("contains: ")
             case "ipo":
                 print("Change isPartOf relation")
-                new_row["isPartOf"] = input("Input: ")
+                new_row["isPartOf"] = input("isPartOf: ")
             case "ifo":
                 print("Change isFormatOf relation")
-                new_row["isFormatOf"] = input("Input: ")
+                new_row["isFormatOf"] = input("isFormatOf: ")
             case "p":
                 print(new_row)
             case "save":
@@ -153,13 +147,14 @@ def save_row(df, identifier, new_row):
 
 def remove_empty_lines(df):
     df = df.dropna(how='all')
+
     return df
 
 # identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires, contains, isPartOf, isFormatOf
-def delete_row(df, id):
-    id = int(id)
-    df = delete_relationship(df, id)
-    df = df.drop(id)
+def delete_row(df, identifier):
+    identifier = float(identifier)
+    df = delete_relationship(df, identifier)
+    df = df.drop(identifier)
     df = shift_nodes_after_empty_lines(df)
     return df
 
@@ -189,12 +184,12 @@ def shift_nodes_after_empty_lines(df):
     old_index = -1
     change = False
     for index, row in df.iterrows():
-        index_int = int(index)
+        index_int = float(index)
         new_index = old_index + 1
 
         if index_int != new_index:
             change = True
-            df.rename(index={index: str(new_index)}, inplace=True)
+            df.rename(index={index: new_index}, inplace=True)
             df = df.replace(index, str(new_index))
 
             df = check_alt_list(df, str(index), str(new_index))
