@@ -73,7 +73,7 @@ def update_row(df, identifier, new_row):
           "comesAfter (ca), "
           "alternativeContent (ac), "
           "requires (r), "
-          "contains (c), "
+          # "contains (c), "
           "isPartOf (ipo), "
           "isFormatOf (ifo), ")
     print("Do you want to see your current edits? Print (p), ",
@@ -108,9 +108,9 @@ def update_row(df, identifier, new_row):
             case "r":
                 print("Change requires relation")
                 new_row["requires"] = input("requires: ")
-            case "c":
-                print("Change contains relation")
-                new_row["contains"] = input("contains: ")
+            # case "c":
+            #     print("Change contains relation")
+            #     new_row["contains"] = input("contains: ")
             case "ipo":
                 print("Change isPartOf relation")
                 new_row["isPartOf"] = input("isPartOf: ")
@@ -139,7 +139,7 @@ def save_row(df, identifier, new_row):
     df.at[int(identifier), "comesAfter"] = new_row["comesAfter"]
     df.at[int(identifier), "alternativeContent"] = new_row["alternativeContent"]
     df.at[int(identifier), "requires"] = new_row["requires"]
-    df.at[int(identifier), "contains"] = new_row["contains"]
+    # df.at[int(identifier), "contains"] = new_row["contains"]
     df.at[int(identifier), "isPartOf"] = new_row["isPartOf"]
     df.at[int(identifier), "isFormatOf"] = new_row["isFormatOf"]
 
@@ -166,11 +166,11 @@ def delete_relationship(df, id):
 
 def delete_relationship_lists(df, id):
     for index, row in df.iterrows():
-        try:
-            if np.isnan(df.at[index, 'contains']):
-                pass
-        except:
-            df.loc[index,'contains'] = df.loc[index, 'contains'].replace(str(id), np.nan)
+        # try:
+        #     if np.isnan(df.at[index, 'contains']):
+        #         pass
+        # except:
+        #     df.loc[index,'contains'] = df.loc[index, 'contains'].replace(str(id), np.nan)
 
         try:
             if np.isnan(df.at[index, 'requires']):
@@ -192,7 +192,7 @@ def shift_nodes_after_empty_lines(df):
             df.rename(index={index: new_index}, inplace=True)
             df = df.replace(index, str(new_index))
 
-            df = check_alt_list(df, str(index), str(new_index))
+            # df = check_alt_list(df, str(index), str(new_index))
 
         old_index = new_index
 
