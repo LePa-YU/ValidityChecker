@@ -26,7 +26,7 @@ def add_row(df):
         "comesAfter": np.nan,
         "alternativeContent": np.nan,
         "requires": np.nan,
-        "contains": np.nan,
+        # "contains": np.nan,
         "isPartOf": np.nan,
         "isFormatOf": np.nan,
     }
@@ -55,7 +55,7 @@ def edit(df):
         "comesAfter": df.at[int(identifier), "comesAfter"],
         "alternativeContent": df.at[int(identifier), "alternativeContent"],
         "requires": df.at[int(identifier), "requires"],
-        "contains": df.at[int(identifier), "contains"],
+        # "contains": df.at[int(identifier), "contains"],
         "isPartOf": df.at[int(identifier), "isPartOf"],
         "isFormatOf": df.at[int(identifier), "isFormatOf"],
     }
@@ -176,21 +176,23 @@ def delete_relationship_lists(df, id):
             if np.isnan(df.at[index, 'requires']):
                 pass
         except:
-            df.loc[index, 'requires'] = df.loc[index, 'requires'].replace(str(id), np.nan)
+            df.loc[index, 'requires'] = df.loc[index, 'requires'].replace(str(id), str(np.nan))
 
     return df
 
 def shift_nodes_after_empty_lines(df):
     old_index = -1
     change = False
-    for index, row in df.iterrows():
-        index_int = float(index)
+    new_df = df.copy()
+    for idx, row in df.iterrows():
+        index_int = int(idx)
         new_index = old_index + 1
 
         if index_int != new_index:
             change = True
-            df.rename(index={index: new_index}, inplace=True)
-            df = df.replace(index, str(new_index))
+
+            new_df.rename(index={idx: new_index}, inplace=True)
+            new_df.replace(idx, str(new_index))
 
             # df = check_alt_list(df, str(index), str(new_index))
 
@@ -198,15 +200,17 @@ def shift_nodes_after_empty_lines(df):
 
     if change:
         print("Changed index of node(s).")
+    else:
+        print("No change in index of node(s).")
 
-    return df
+    return new_df
 
-def check_alt_list(df, old_index, new_index):
-    for index, row in df.iterrows():
-        try:
-            if np.isnan(df.at[index, 'contains']):
-                pass
-        except:
-            if old_index in df.loc[index,'contains']:
-                df.loc[index,'contains'] = df.loc[index, 'contains'].replace(old_index, new_index)
-    return df
+# def check_alt_list(df, old_index, new_index):
+#     for index, row in df.iterrows():
+#         try:
+#             if np.isnan(df.at[index, 'contains']):
+#                 pass
+#         except:
+#             if old_index in df.loc[index,'contains']:
+#                 df.loc[index,'contains'] = df.loc[index, 'contains'].replace(old_index, new_index)
+#     return df
