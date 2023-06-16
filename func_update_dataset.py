@@ -3,11 +3,22 @@ import pandas as pd
 import numpy as np
 
 def open_file(filepath):
+    pd.options.display.float_format = '{:,.0f}'.format
     df = pd.read_csv(filepath, encoding="utf-8")
     df = df.rename(columns=lambda x: x.strip())
-    df['identifier'] = df['identifier'].astype('Int64')
+    df['identifier'] = df['identifier'].astype(int)
+    # df['identifier'] = df['identifier'].astype('Int32')
+    # df['isPartOf'] = df['isPartOf'].astype(str)
+    # df['assesses'] = df['assesses'].astype('Int64')
+    # df['comesAfter'] = df['comesAfter'].astype('Int64')
+    # df['alternativeContent'] = df['alternativeContent'].astype('Int64')
+    # df['isFormatOf'] = df['isFormatOf'].astype('Int64')
     df.set_index('identifier', inplace=True)
+    # df.replace(pd.NA, np.NaN, inplace=True)
+    # df.fillna(np.NaN, inplace=True)
 
+    # print(df.loc[20])
+    # print(df)
     return df
 
 def save_file(df, filepath):
@@ -150,51 +161,64 @@ def remove_empty_lines(df):
 
     return df
 
-# identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires, contains, isPartOf, isFormatOf
+# identifier, title, description, url, type, assesses, comesAfter, alternativeContent, requires, isPartOf, isFormatOf
+# #contains removed#
 def delete_row(df, identifier):
-    identifier = float(identifier)
+    identifier = int(identifier)
+    # print(df.loc['266'])
+
     df = delete_relationship(df, identifier)
+
+    # print(df.loc[identifier])
     df = df.drop(identifier)
     df = shift_nodes_after_empty_lines(df)
+    # print(df.loc[identifier])
     return df
 
-def delete_relationship(df, id):
-    df = df.replace(id, np.nan)
-    df = delete_relationship_lists(df, id)
+def delete_relationship(df, identifier):
+    df = df.replace(identifier, np.nan)
+    df = delete_relationship_lists(df, identifier)
 
     return df
 
-def delete_relationship_lists(df, id):
+def delete_relationship_lists(df, identifier):
     for index, row in df.iterrows():
-        # try:
-        #     if np.isnan(df.at[index, 'contains']):
-        #         pass
-        # except:
-        #     df.loc[index,'contains'] = df.loc[index, 'contains'].replace(str(id), np.nan)
-
         try:
             if np.isnan(df.at[index, 'requires']):
                 pass
         except:
-            df.loc[index, 'requires'] = df.loc[index, 'requires'].replace(str(id), str(np.nan))
+            # print(identifier)
+            # print(df.loc[index, 'requires'].replace(" ", "").split(","))
+            if len(df.loc[index, 'requires'].replace(" ", "").split(",")) > 1 and str(identifier) in df.loc[index, 'requires'].replace(" ", "").split(","):
+                # print("Remove from lists")
+                # print(len(df.loc[index, 'requires'].replace(" ", "").split(",")))
+                id_list = df.loc[index, 'requires'].replace(" ", "").split(",")
+                if len(df.loc[index, 'requires'].replace(" ", "").split(",")) > 2 :
+                    df.loc[index, 'requires'] = ", ".join(id_list.remove(str(identifier)))
+                else:
+                    id_list.remove(str(identifier))
+                    single_id = ", ".join(id_list)
+                    df.loc[index, 'requires'] = single_id
+            elif len(df.loc[index, 'requires'].split(",")) == 1 and str(identifier) == df.loc[index, 'requires']:
+                df.loc[index, 'requires'] = np.NAN
+
 
     return df
 
 def shift_nodes_after_empty_lines(df):
     old_index = -1
     change = False
-    new_df = df.copy()
+    new_df = df.copy(deep=True)
     for idx, row in df.iterrows():
         index_int = int(idx)
-        new_index = old_index + 1
+        new_index = int(old_index + 1)
 
         if index_int != new_index:
             change = True
-
             new_df.rename(index={idx: new_index}, inplace=True)
-            new_df.replace(idx, str(new_index))
+            new_df = new_df.replace(idx, new_index)
 
-            # df = check_alt_list(df, str(index), str(new_index))
+            new_df = check_alt_list(new_df, idx, new_index)
 
         old_index = new_index
 
@@ -205,12 +229,17 @@ def shift_nodes_after_empty_lines(df):
 
     return new_df
 
-# def check_alt_list(df, old_index, new_index):
-#     for index, row in df.iterrows():
-#         try:
-#             if np.isnan(df.at[index, 'contains']):
-#                 pass
-#         except:
-#             if old_index in df.loc[index,'contains']:
-#                 df.loc[index,'contains'] = df.loc[index, 'contains'].replace(old_index, new_index)
-#     return df
+def check_alt_list(df, old_index, new_index):
+    for index, row in df.iterrows():
+        try:
+            if np.isnan(df.at[index, 'requires']):
+                pass
+        except:
+            if len(df.loc[index, 'requires'].split(",")) > 1 and str(old_index) in df.loc[index, 'requires'].replace(" ", "").split(","):
+                df_list = ", ".join(df.loc[index, 'requires'].replace(" ","").split(","))
+                df.loc[index, 'requires'] = df_list.replace(str(old_index), str(new_index))
+            elif len(df.loc[index, 'requires'].split(",")) == 1 and str(old_index) == df.loc[index, 'requires']:
+                df.loc[index, 'requires'] = df.loc[index, 'requires'].replace(str(old_index), str(new_index))
+
+
+    return df
