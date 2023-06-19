@@ -6,7 +6,7 @@ def open_file(filepath):
     pd.options.display.float_format = '{:,.0f}'.format
     df = pd.read_csv(filepath, encoding="utf-8")
     df = df.rename(columns=lambda x: x.strip())
-    df['identifier'] = df['identifier'].astype(int)
+    df['identifier'] = df['identifier'].astype('Int64')
     # df['identifier'] = df['identifier'].astype('Int32')
     # df['isPartOf'] = df['isPartOf'].astype(str)
     # df['assesses'] = df['assesses'].astype('Int64')
