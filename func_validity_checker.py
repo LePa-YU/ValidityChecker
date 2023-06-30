@@ -114,7 +114,7 @@ class Atomic:
         if self.assesses is not None:
             if len(self.assesses) == 0:
                 list_warning.append('assesses')
-            elif not self.assesses.isdigit():
+            elif not self.assesses.replace(".", "", 1).isdigit():
                 type_warning.append('assesses [type:integer]')
             if len(self.assesses) != 0 and self.oer_type == 'iER':
                 type_warning.append('iER should not have an assess property')

@@ -2,29 +2,25 @@ from csv import DictReader
 import pandas as pd
 import numpy as np
 
+from tkinter import *
+from tkinter.filedialog import asksaveasfile
+
 def open_file(filepath):
-    pd.options.display.float_format = '{:,.0f}'.format
+    # pd.options.display.float_format = '{:,.0f}'.format
     df = pd.read_csv(filepath, encoding="utf-8")
     df = df.rename(columns=lambda x: x.strip())
-    df['identifier'] = df['identifier'].astype('Int64')
-    # df['identifier'] = df['identifier'].astype('Int32')
-    # df['isPartOf'] = df['isPartOf'].astype(str)
-    # df['assesses'] = df['assesses'].astype('Int64')
-    # df['comesAfter'] = df['comesAfter'].astype('Int64')
-    # df['alternativeContent'] = df['alternativeContent'].astype('Int64')
-    # df['isFormatOf'] = df['isFormatOf'].astype('Int64')
+    # df['identifier'] = df['identifier'].astype(int)
     df.set_index('identifier', inplace=True)
-    # df.replace(pd.NA, np.NaN, inplace=True)
-    # df.fillna(np.NaN, inplace=True)
 
-    # print(df.loc[20])
-    # print(df)
+    # print(df.loc[[11]].to_string())
+    # input("")
     return df
 
 def save_file(df, filepath):
-    file_location = filepath.split('.csv')[0]
-    save_file_location = file_location + '_updated.csv'
-
+    files = [('All Files', '*.*'),
+             ('Python Files', '*.py'),
+             ('Text Document', '*.txt')]
+    save_file_location = asksaveasfile(filetypes=files, defaultextension=files)
     df.to_csv(save_file_location, encoding='utf-8')
 
 def add_row(df):
@@ -49,7 +45,7 @@ def add_row(df):
     df.loc[int(df.tail(1).index.item()) - 0.5] = new_row
     # print(df.to_string())
 
-    df = df.sort_index().reset_index(drop=True)
+    df = df.sort_index().reset_index(drop=True) #.astype(int)
     identifier = df.tail(1).index.item() - 1
 
     return update_row(df, identifier, new_row)
