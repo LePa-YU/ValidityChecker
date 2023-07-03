@@ -5,6 +5,7 @@ class WarningList:
         self.warning = []
         self.error = []
         self.missing_fields = []
+        self.empty_rows = False
 
     def add_error(self, error):
         self.error.append(error)
@@ -27,6 +28,11 @@ class WarningList:
         for idx, x in enumerate(self.missing_fields):
             print(str(idx+1) + " " + x)
 
+    def empty_row_exists(self):
+        self.empty_rows = True
+
+    def empty_rows_deleted(self):
+        self.empty_rows = False
     def print_msg(self):
         print("There are "+str(len(self.error))+" error(s), "+str(len(self.warning))+" warning(s), and " +
               str(len(self.missing_fields))+" empty field(s).")

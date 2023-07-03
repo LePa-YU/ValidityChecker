@@ -53,9 +53,11 @@ def open_file(warning_list, header_list, complete_header_list, filepath):
         if empty_row:
             text = print_fields(empty_row)
             warning_list.add_warning("Warning: Empty row(s): " + text)
+            warning_list.empty_row_exists()
         if empty_row_full:
             text = print_fields(empty_row_full)
             warning_list.add_warning("Warning: Empty row(s): " + text + ". Please make sure rows that are fully empty are deleted.")
+            warning_list.empty_row_exists()
 
     return file_dict, warning_list
 
@@ -127,8 +129,6 @@ def confirm_start_end_nodes(key, er, warning_list, node, oer_type):
 
 # def check_field_type(file_dict, key, er, warning_list):
 #     TODO
-
-
 
 def check_if_field_exists(er, er_list, list_comesAfter):
     comesAfter = False

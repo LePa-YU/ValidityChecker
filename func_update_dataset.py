@@ -6,14 +6,10 @@ from tkinter import *
 from tkinter.filedialog import asksaveasfile
 
 def open_file(filepath):
-    # pd.options.display.float_format = '{:,.0f}'.format
     df = pd.read_csv(filepath, encoding="utf-8")
     df = df.rename(columns=lambda x: x.strip())
-    # df['identifier'] = df['identifier'].astype(int)
     df.set_index('identifier', inplace=True)
 
-    # print(df.loc[[11]].to_string())
-    # input("")
     return df
 
 def save_file(df, filepath):
@@ -38,21 +34,18 @@ def add_row(df):
         "isFormatOf": np.nan,
     }
 
-    print("The add function will add a new line to the end of the file.")
-    # print(df.tail(1).index.item())
-    # print(float(df.tail(1).index.item()) - 0.5)
-
+    print("### The add function will add a new line to the end of the file.")
     df.loc[int(df.tail(1).index.item()) - 0.5] = new_row
-    # print(df.to_string())
 
-    df = df.sort_index().reset_index(drop=True) #.astype(int)
+    df = df.sort_index().reset_index(drop=True)
     identifier = df.tail(1).index.item() - 1
+    df.index.name = 'identifier'
 
     return update_row(df, identifier, new_row)
 
 def edit(df):
-    print("Please indicate what row you wish to edit.")
-    identifier = input("Row ID:")
+    print("### Please indicate what row you wish to edit.")
+    identifier = input(">>Row ID:")
     new_row = {
         "title": df.at[int(identifier), "title"],
         "description": df.at[int(identifier), "description"],
@@ -70,8 +63,7 @@ def edit(df):
     return update_row(df, identifier, new_row)
 
 def update_row(df, identifier, new_row):
-    print("")
-    print("What do you wish to edit? Please, select one of the following: ")
+    print("### What do you wish to edit? Please, select one of the following: ")
     print("title (t), "
           "description (d), "
           "url (u), "
@@ -83,47 +75,48 @@ def update_row(df, identifier, new_row):
           # "contains (c), "
           "isPartOf (ipo), "
           "isFormatOf (ifo), ")
-    print("Do you want to see your current edits? Print (p), ",
+    print("")
+    print("### Do you want to see your current edits? Print (p), ",
           "Done with edits to ID: " + str(identifier) + ". Type (save) to save and exit or (cancel) to cancel and exit.")
 
     # input("Press enter to continue...")
 
     while True:
-        edit_choice = input('input: ')
+        edit_choice = input('>>Input: ')
         match edit_choice:
             case "t":
                 print("Change title.")
-                new_row["title"] = input("title: ")
+                new_row["title"] = input(">>Title: ")
             case "d":
                 print("Change description")
-                new_row["description"] = input("description: ")
+                new_row["description"] = input(">>Description: ")
             case "u":
                 print("Change URL")
-                new_row["url"] = input("URL: ")
+                new_row["url"] = input(">>URL: ")
             case "type":
                 print("Change type")
-                new_row["type"] = input("type:")
+                new_row["type"] = input(">>Type:")
             case "a":
                 print("Change assesses relation")
-                new_row["assesses"] = input("assesses: ")
+                new_row["assesses"] = input(">>Assesses: ")
             case "ca":
                 print("Change comesAfter relation")
-                new_row["comesAfter"] = input("comesAfter: ")
+                new_row["comesAfter"] = input(">>comesAfter: ")
             case "ac":
                 print("Change alternativeContent relation")
-                new_row["alternativeContent"] = input("alternativeContent: ")
+                new_row["alternativeContent"] = input(">>alternativeContent: ")
             case "r":
                 print("Change requires relation")
-                new_row["requires"] = input("requires: ")
+                new_row["requires"] = input(">>Requires: ")
             # case "c":
             #     print("Change contains relation")
             #     new_row["contains"] = input("contains: ")
             case "ipo":
                 print("Change isPartOf relation")
-                new_row["isPartOf"] = input("isPartOf: ")
+                new_row["isPartOf"] = input(">>isPartOf: ")
             case "ifo":
                 print("Change isFormatOf relation")
-                new_row["isFormatOf"] = input("isFormatOf: ")
+                new_row["isFormatOf"] = input(">>isFormatOf: ")
             case "p":
                 print(new_row)
             case "save":
@@ -138,7 +131,7 @@ def update_row(df, identifier, new_row):
     return df
 
 def save_row(df, identifier, new_row):
-    print("Edit_row")
+    print("### Saved")
     df.at[int(identifier), "title"] = new_row["title"]
     df.at[int(identifier), "description"] = new_row["description"]
     df.at[int(identifier), "url"] = new_row["url"]
@@ -161,15 +154,26 @@ def remove_empty_lines(df):
 # #contains removed#
 def delete_row(df, identifier):
     identifier = int(identifier)
-    # print(df.loc['266'])
+    check = False
+    if len(df.index) > identifier:
+        if df.at[int(identifier), "type"] == "aER" or df.at[int(identifier), "type"] == "iER" or df.at[int(identifier), "type"] == "rER":
+            choice = input("This ER is an AIR ER. Do you still want to delete (y/n)")
+            if choice == "y" or choice == "yes":
+                df = delete_relationship(df, identifier)
+                df = df.drop(identifier)
+                df = shift_nodes_after_empty_lines(df)
+                check = True
+            else:
+                print("### No change made.")
+        else:
+            df = delete_relationship(df, identifier)
+            df = df.drop(identifier)
+            df = shift_nodes_after_empty_lines(df)
+            check = True
+    else:
+        print("### Out of scope.")
 
-    df = delete_relationship(df, identifier)
-
-    # print(df.loc[identifier])
-    df = df.drop(identifier)
-    df = shift_nodes_after_empty_lines(df)
-    # print(df.loc[identifier])
-    return df
+    return df, check
 
 def delete_relationship(df, identifier):
     df = df.replace(identifier, np.nan)
@@ -183,14 +187,11 @@ def delete_relationship_lists(df, identifier):
             if np.isnan(df.at[index, 'requires']):
                 pass
         except:
-            # print(identifier)
-            # print(df.loc[index, 'requires'].replace(" ", "").split(","))
             if len(df.loc[index, 'requires'].replace(" ", "").split(",")) > 1 and str(identifier) in df.loc[index, 'requires'].replace(" ", "").split(","):
-                # print("Remove from lists")
-                # print(len(df.loc[index, 'requires'].replace(" ", "").split(",")))
                 id_list = df.loc[index, 'requires'].replace(" ", "").split(",")
-                if len(df.loc[index, 'requires'].replace(" ", "").split(",")) > 2 :
-                    df.loc[index, 'requires'] = ", ".join(id_list.remove(str(identifier)))
+                if len(df.loc[index, 'requires'].replace(" ", "").split(",")) > 2:
+                    id_list.remove(str(identifier))
+                    df.loc[index, 'requires'] = ", ".join(id_list)
                 else:
                     id_list.remove(str(identifier))
                     single_id = ", ".join(id_list)
@@ -219,9 +220,9 @@ def shift_nodes_after_empty_lines(df):
         old_index = new_index
 
     if change:
-        print("Changed index of node(s).")
+        print("### Changed index of node(s).")
     else:
-        print("No change in index of node(s).")
+        print("### No change in index of node(s).")
 
     return new_df
 
